@@ -7,11 +7,10 @@
  * The ALU (Arithmetic Logic Unit).
  * Computes one of the following functions:
  * x+y, x-y, y-x, 0, 1, -1, x, y, -x, -y, !x, !y,
- * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs, 
+ * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs,
  * according to 6 input bits denoted zx,nx,zy,ny,f,no.
  * In addition, the ALU computes two 1-bit outputs:
- * if the ALU output == 0, zr is set to 1; otherwise zr is set to 0;
- * if the ALU output < 0, ng is set to 1; otherwise ng is set to 0.
+ * if the ALU output == 0, zr is set to 1; otherwise zr is set to 0; * if the ALU output < 0, ng is set to 1; otherwise ng is set to 0.
  */
 
 // Implementation: the ALU logic manipulates the x and y inputs
@@ -27,8 +26,8 @@
 // if (out < 0) set ng = 1
 
 CHIP ALU {
-    IN  
-        x[16], y[16],  // 16-bit inputs        
+    IN
+        x[16], y[16],  // 16-bit inputs
         zx, // zero the x input?
         nx, // negate the x input?
         zy, // zero the y input?
@@ -36,11 +35,36 @@ CHIP ALU {
         f,  // compute out = x + y (if 1) or x & y (if 0)
         no; // negate the out output?
 
-    OUT 
+    OUT
         out[16], // 16-bit output
         zr, // 1 if (out == 0), 0 otherwise
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    Not (in=x[0], out=notin0);
+
+    Not16 (in=x, out=notX);
+    And16 (a=x, b=notX, out=zero16);
+    Mux16 (a=x, b=zero16, sel=zx, out=tmp1X);
+    Not16 (in=tmp1X, out=notTmp1X);
+    Mux16 (a=tmp1X, b=notTmp1X, sel=nx, out=tmp2X);
+
+    Not16 (in=y, out=notY);
+    Mux16 (a=y, b=zero16, sel=zy, out=tmp1Y);
+    Not16 (in=tmp1Y, out=notTmp1Y);
+    Mux16 (a=tmp1Y, b=notTmp1Y, sel=ny, out=tmp2Y);
+
+    Add16 (a=tmp2X, b=tmp2Y, out=addResult);
+    And16 (a=tmp2X, b=tmp2Y, out=andResult);
+    Mux16 (a=andResult, b=addResult, sel=f, out=outTmp);
+    Not16 (in=outTmp, out=notOutTmp);
+    Mux16 (a=outTmp, b=notOutTmp, sel=no, out=out, out=result, out[0..7]=prev, out[8..15]=later, out[15]=sig);
+
+    Or8Way (in=prev, out=prevOr);
+    Or8Way (in=later, out=laterOr);
+    Or (a=prevOr, b=laterOr, out=flag1);
+    Mux (a=true, b=false, sel=flag1, out=zr);
+
+    Mux16 (a=notOutTmp, b=outTmp, sel=no, out[15]=flag2);
+    Mux (a=false, b=true, sel=sig, out=ng);
 }
