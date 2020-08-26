@@ -1,0 +1,86 @@
+/** Implements the Tetris game. */
+class Tetris {
+    field Board board;
+    field Array blocks;     // these are blocks which is fallen in this game
+
+    /** Constructs a new Tetris Game. */
+    constructor Tetris new() {
+        let board = Board.new();
+        let blocks = Array.new(4);
+        let blocks[0] = Block.new(board, 3, -2);
+        let blocks[1] = Block.new(board, 3, -2);
+        let blocks[2] = Block.new(board, 3, -2);
+        let blocks[3] = Block.new(board, 3, -2);
+        return this;
+    }
+
+    /** Runs the game: handles the user's inputs and moves the Tetris block. */
+    method void run() {
+        var char key;  // the key currently pressed by the user
+        var boolean exit;
+        var int blockIndex;
+        var Block block;
+
+        let key = 0;
+        let blockIndex = 0;
+        let block = blocks[blockIndex];
+        let exit = false;
+        while (~exit) {
+            let block = blocks[blockIndex];
+            do board.draw();
+            do block.draw();
+
+            // waits for a key to be pressed
+            while (key = 0) {
+                let key = Keyboard.keyPressed();
+            }
+            if (key = 81)  {        // q key
+                let exit = true;
+            }
+            if (key = 133) {          // down arrow
+                // nothing
+            }
+            if (key = 130) {          // left arrow
+                do block.clear();
+                do block.moveLeft();
+                do block.draw();
+            }
+            if (key = 132) {          // right arrow
+                do block.clear();
+                do block.moveRight();
+                do block.draw();
+            }
+
+            // block move down
+            do Sys.wait(50);
+            do block.clear();
+            do block.moveDown();
+            do block.draw();
+
+            if (~block.canFall()) { // current block touch the ground
+                do block.clear();
+                do board.setCell(block);
+                do board.tryDeleteLine();   // if a line is filled with blocks then delete line
+                do board.draw();
+                let blockIndex = blockIndex + 1;
+            }
+            if (blockIndex > 3) {
+                let exit = true;
+            }
+
+            // waits for the key to be released
+            while (~(key = 0)) {
+                let key = Keyboard.keyPressed();
+            }
+        }
+
+        do Output.printString("Game End");
+        return;
+    }
+
+    /** Disposes this game. */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

@@ -1,0 +1,117 @@
+/** Implements the Tetris Block. */
+class Block {
+    static Board board;      // pointer of board
+    static int boxSize;      // num of box size
+
+    field int x, y;          // (x, y) represents coordinate of block.
+    field Array array;       // array of boxes, which represent box state. (fill=1, empty=0)
+
+    /** Constructs a new Tetris board. */
+    constructor Block new(Board b, int argx, int argy) {
+        var int i;
+        var int length;
+
+        let board = b;
+        let boxSize = 14;
+
+        let x = argx;
+        let y = argy;
+        let array = Array.new(4);
+        let i = 0;
+        let length = 0;
+        while (i < length) {
+            let array[i] = true;
+            let i = i + 1;
+        }
+
+        return this;
+    }
+
+    /** draw this block */
+    method void draw() {
+        do Screen.setColor(true);
+        do drawCore();
+        return;
+    }
+
+    /** clear this block */
+    method void clear() {
+        do Screen.setColor(false);
+        do drawCore();
+        return;
+    }
+
+    /** call by draw() or clear() */
+    method void drawCore() {
+        do Screen.drawRectangle(board.x1() + (x * boxSize), board.y1() + (y * boxSize), board.x1() + ((x+4) * boxSize), board.y1() + ((y+1) * boxSize));
+        return;
+    }
+
+    /** move this block */
+    method void moveDown() {
+        let y = y + 1;
+        if (isCollideBoard()) {
+            let y = y - 1;
+        }
+        return;
+    }
+    method void moveLeft() {
+        let x = x - 1;
+        if (isCollideBoard()) {
+            let x = x + 1;
+        }
+        return;
+    }
+    method void moveRight() {
+        let x = x + 1;
+        if (isCollideBoard()) {
+            let x = x - 1;
+        }
+        return;
+    }
+
+    /** if this block can move down then return true */
+    method boolean canFall() {
+        var boolean flag;
+        let y = y + 1;
+        let flag = isCollideBoard();
+        let y = y - 1;
+        return ~flag;
+    }
+
+    /** if this block collide to Board then return true */
+    method boolean isCollideBoard() {
+        var Array cells;
+        var Array row;
+        var int i, j;
+
+        if ((x < 0) | (x > 5) | (y > 8)) {     // on the board frame
+            return true;
+        }
+
+        if (y < 0) {        // block is above board
+            return false;
+        }
+
+        let cells = board.cells();
+        let row = cells[y];
+        let i = 0;
+        while (i < 4) {
+            let j = 0;
+            if (row[x+i]) {       // row[y] is cell in the board
+                return true;
+            }
+            let i = i + 1;
+        }
+
+        return false;
+    }
+
+    /** getter */
+    method int x() {
+        return x;
+    }
+    method int y() {
+        return y;
+    }
+}

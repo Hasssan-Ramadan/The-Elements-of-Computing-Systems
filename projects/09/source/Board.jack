@@ -1,0 +1,155 @@
+/** Implements the Tetris board. */
+class Board {
+    static int maxW;        // board width
+    static int maxH;        // board height
+    static int numBoxW;     // num of horizontal boxes
+    static int numBoxH;    // num of vertical boxes
+    static int boxSize;      // num of box size
+
+    field int x1, x2, y1, y2;  // board position
+    field Array cells;       // array of cells, which represent box state. (fill=1, empty=0)
+
+    /** Constructs a new Tetris board. */
+    constructor Board new() {
+        var int i, j;
+        var Array row;
+
+        let maxW = 511;
+        let maxH = 255;
+        let numBoxW = 10;
+        let numBoxH = 10;
+        let boxSize = 14;
+
+        let i = 0;
+        let cells = Array.new(numBoxH);
+        while (i < numBoxH) {
+            let row = Array.new(numBoxW);
+            let cells[i] = row;
+            let j = 0;
+            while (j < numBoxW) {
+                // bottom or most left or most right
+                if ((i = (numBoxH - 1)) | (j = 0) | (j = (numBoxW - 1))) {
+                    let row[j] = true;
+                }
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
+
+        let x1 = (maxW / 2) - (numBoxW * boxSize / 2);
+        let x2 = x1 + (numBoxW * boxSize);
+        let y1 = maxH - (numBoxW * boxSize);
+        let y2 = maxH - boxSize;
+        return this;
+    }
+
+    /** draw this board */
+    method void draw() {
+        var int i, j;
+        var Array row;
+
+        let i = 0;
+        while (i < numBoxH) {
+            let row = cells[i];
+            let j = 0;
+            while (j < numBoxW) {
+                do Screen.setColor(row[j]);
+                do Screen.drawRectangle(x1 + (j * boxSize), y1 + (i * boxSize), x1 + ((j+1) * boxSize), y1 + ((i+1) * boxSize));
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+
+    /** set cells true */
+    method void setCell(Block block) {
+        var int i;
+        var Array row;
+
+        let row = cells[block.y()];
+        while (i < 4) {
+            let row[block.x() + i] = true;
+            let i = i + 1;
+        }
+        return;
+    }
+
+    /** delete line of blocks if a line is filled with blocks */
+    method void tryDeleteLine() {
+        var int i, j;
+        var boolean deleteFlag;
+        var Array row;
+        var boolean cell;
+
+        let i = 8;
+        while(i > 0) {  // from bottom line(except board frame) to top line
+            let deleteFlag = true;
+            let row = cells[i];
+            let j = 1;
+            while (j < 9) {     // column inside board frame
+                let cell = row[j];
+                if (~cell) {        // cell is empty
+                    let deleteFlag = false;
+                }
+                let j = j + 1;
+            }
+            if (deleteFlag) {     // this line is filled with blocks
+                do deleteLine(i);
+            }
+
+            let i = i - 1;
+        }
+        return;
+    }
+
+    /** delete line(cells[rowIndex]) */
+    method void deleteLine(int rowIndex) {
+        var int i, j;
+        var Array row, aboveRow;
+        var boolean cell;
+
+        // delete line and repaint board
+        let row = cells[rowIndex];
+        let j = 1;
+        while(j < 9) {
+            let row[j] = false;
+            let j = j + 1;
+        }
+        do draw();
+        do Sys.wait(50);
+
+        // blocks fall down and repaint board
+        let i = rowIndex;       // above delete line
+        while(i > 0) {
+            let row = cells[i];
+            let aboveRow = cells[i - 1];
+            let j = 1;
+            while(j < 9) {
+                let row[j] = aboveRow[j];
+                let j = j + 1;
+            }
+            let i = i - 1;
+        }
+        do draw();
+
+        return;
+    }
+
+    /** getter */
+    method int x1() {
+        return x1;
+    }
+    method int x2() {
+        return x2;
+    }
+    method int y1() {
+        return y1;
+    }
+    method int y2() {
+        return y2;
+    }
+    method Array cells() {
+        return cells;
+    }
+}
