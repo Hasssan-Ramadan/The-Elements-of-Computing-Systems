@@ -1,0 +1,7 @@
+.DS_STORE
+*.out
+*.dat
+node_modules
+coverage
+dist
+*.json
